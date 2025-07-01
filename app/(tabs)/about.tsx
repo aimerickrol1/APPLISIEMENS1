@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Linking, Platform } from 'react-native';
-import { Info, ChevronRight, Shield, Smartphone, CircleCheck as CheckCircle, FileText, Calculator, Sparkles } from 'lucide-react-native';
+import { Info, ChevronRight, Shield, Smartphone, CircleCheck as CheckCircle, FileText, Calculator, Sparkles, X } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import * as WebBrowser from 'expo-web-browser';
@@ -138,7 +138,7 @@ export default function AboutScreen() {
           )}
         </View>
 
-        {/* NOUVEAU : Section Prochaines nouveautés */}
+        {/* Section Prochaines nouveautés */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🚀 Développement</Text>
           
@@ -236,7 +236,7 @@ export default function AboutScreen() {
                 onPress={() => setCalculationsModalVisible(false)}
                 style={styles.closeButton}
               >
-                <Text style={styles.closeButtonText}>✕</Text>
+                <X size={20} color="#6B7280" />
               </TouchableOpacity>
             </View>
             
@@ -378,7 +378,7 @@ export default function AboutScreen() {
         </View>
       </Modal>
 
-      {/* NOUVEAU : Modal Prochaines nouveautés - VERSION HORS LIGNE */}
+      {/* Modal Prochaines nouveautés - VERSION CORRIGÉE */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -394,12 +394,12 @@ export default function AboutScreen() {
                 onPress={() => setUpcomingFeaturesModalVisible(false)}
                 style={styles.closeButton}
               >
-                <Text style={styles.closeButtonText}>✕</Text>
+                <X size={20} color="#6B7280" />
               </TouchableOpacity>
             </View>
             
             <ScrollView style={styles.upcomingScrollView} showsVerticalScrollIndicator={true}>
-              {/* Introduction MODIFIÉE */}
+              {/* Introduction */}
               <View style={styles.upcomingIntro}>
                 <Text style={styles.upcomingIntroText}>
                   Découvrez les futures fonctionnalités qui arriveront dans l'application Siemens Smoke Extraction Calculator.
@@ -411,7 +411,7 @@ export default function AboutScreen() {
                 <Text style={styles.featureSectionTitle}>🎯 Fonctionnalités principales</Text>
                 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>📊</View>
+                  <Text style={styles.featureIcon}>📊</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Tableaux de bord avancés</Text>
                     <Text style={styles.featureDescription}>
@@ -421,7 +421,7 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>📱</View>
+                  <Text style={styles.featureIcon}>📱</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Interface optimisée</Text>
                     <Text style={styles.featureDescription}>
@@ -431,7 +431,7 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>🔄</View>
+                  <Text style={styles.featureIcon}>🔄</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Sauvegarde automatique</Text>
                     <Text style={styles.featureDescription}>
@@ -446,7 +446,7 @@ export default function AboutScreen() {
                 <Text style={styles.featureSectionTitle}>🔧 Outils et fonctionnalités</Text>
                 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>📷</View>
+                  <Text style={styles.featureIcon}>📷</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Capture photo intégrée</Text>
                     <Text style={styles.featureDescription}>
@@ -456,7 +456,7 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>🎙️</View>
+                  <Text style={styles.featureIcon}>🎙️</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Notes vocales</Text>
                     <Text style={styles.featureDescription}>
@@ -466,7 +466,7 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>📋</View>
+                  <Text style={styles.featureIcon}>📋</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Modèles de rapports</Text>
                     <Text style={styles.featureDescription}>
@@ -476,7 +476,7 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>📊</View>
+                  <Text style={styles.featureIcon}>📊</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Analyse statistique</Text>
                     <Text style={styles.featureDescription}>
@@ -491,7 +491,7 @@ export default function AboutScreen() {
                 <Text style={styles.featureSectionTitle}>✨ Expérience utilisateur</Text>
                 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>🌙</View>
+                  <Text style={styles.featureIcon}>🌙</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Mode sombre complet</Text>
                     <Text style={styles.featureDescription}>
@@ -501,7 +501,7 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>♿</View>
+                  <Text style={styles.featureIcon}>♿</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Accessibilité renforcée</Text>
                     <Text style={styles.featureDescription}>
@@ -511,7 +511,7 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>⚡</View>
+                  <Text style={styles.featureIcon}>⚡</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Performance optimisée</Text>
                     <Text style={styles.featureDescription}>
@@ -521,7 +521,7 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.featureItem}>
-                  <View style={styles.featureIcon}>🔍</View>
+                  <Text style={styles.featureIcon}>🔍</Text>
                   <View style={styles.featureContent}>
                     <Text style={styles.featureTitle}>Recherche avancée</Text>
                     <Text style={styles.featureDescription}>
@@ -530,8 +530,6 @@ export default function AboutScreen() {
                   </View>
                 </View>
               </View>
-
-              {/* Note de fin SUPPRIMÉE - plus de message vert */}
             </ScrollView>
 
             <View style={styles.modalFooter}>
@@ -690,10 +688,6 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 8,
   },
-  closeButtonText: {
-    fontSize: 18,
-    color: '#6B7280',
-  },
   modalScrollView: {
     maxHeight: 300,
   },
@@ -851,7 +845,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
-  // NOUVEAU : Styles pour les prochaines nouveautés
+  // Styles pour les prochaines nouveautés - VERSION CORRIGÉE
   upcomingIntro: {
     backgroundColor: '#F0FDFA',
     borderRadius: 12,
