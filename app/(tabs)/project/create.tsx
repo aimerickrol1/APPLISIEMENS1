@@ -205,20 +205,21 @@ export default function CreateProjectScreen() {
           error={errors.endDate}
         />
 
-        {/* Section Prédéfinition de structure */}
+        {/* Section Prédéfinition de structure - SANS SCROLL AUTOMATIQUE */}
         <View style={styles.structureSection}>
-          <View style={styles.structureHeader}>
+          <TouchableOpacity 
+            style={styles.structureHeader}
+            onPress={() => setEnableStructurePreset(!enableStructurePreset)}
+            activeOpacity={0.7}
+          >
             <View style={styles.structureTitle}>
               <Text style={styles.structureIcon}>🏗️</Text>
               <Text style={styles.structureTitleText}>Prédéfinir la structure (optionnel)</Text>
             </View>
-            <TouchableOpacity
-              style={[styles.toggle, enableStructurePreset && styles.toggleActive]}
-              onPress={() => setEnableStructurePreset(!enableStructurePreset)}
-            >
+            <View style={[styles.toggle, enableStructurePreset && styles.toggleActive]}>
               <View style={[styles.toggleThumb, enableStructurePreset && styles.toggleThumbActive]} />
-            </TouchableOpacity>
-          </View>
+            </View>
+          </TouchableOpacity>
           
           <Text style={styles.structureDescription}>
             Créez automatiquement vos bâtiments, zones et volets
@@ -242,26 +243,38 @@ export default function CreateProjectScreen() {
                 max={20}
               />
 
-              <Text style={styles.shuttersTitle}>🔲 Volets par zone (max 30)</Text>
-              
-              <View style={styles.shutterInputs}>
-                <NumericInput
-                  label="• Volet Haut (VH)"
-                  value={highShuttersPerZone}
-                  onValueChange={setHighShuttersPerZone}
-                  min={0}
-                  max={30}
-                  style={styles.shutterInput}
-                />
+              <View style={styles.shuttersSection}>
+                <Text style={styles.shuttersTitle}>🔲 Volets par zone (max 30)</Text>
+                
+                <View style={styles.shutterInputsRow}>
+                  <View style={styles.shutterInputContainer}>
+                    <View style={styles.shutterTypeIndicator}>
+                      <View style={[styles.shutterDot, { backgroundColor: '#10B981' }]} />
+                      <Text style={styles.shutterTypeLabel}>Volet Haut (VH)</Text>
+                    </View>
+                    <NumericInput
+                      value={highShuttersPerZone}
+                      onValueChange={setHighShuttersPerZone}
+                      min={0}
+                      max={30}
+                      style={styles.shutterInput}
+                    />
+                  </View>
 
-                <NumericInput
-                  label="• Volet Bas (VB)"
-                  value={lowShuttersPerZone}
-                  onValueChange={setLowShuttersPerZone}
-                  min={0}
-                  max={30}
-                  style={styles.shutterInput}
-                />
+                  <View style={styles.shutterInputContainer}>
+                    <View style={styles.shutterTypeIndicator}>
+                      <View style={[styles.shutterDot, { backgroundColor: '#F59E0B' }]} />
+                      <Text style={styles.shutterTypeLabel}>Volet Bas (VB)</Text>
+                    </View>
+                    <NumericInput
+                      value={lowShuttersPerZone}
+                      onValueChange={setLowShuttersPerZone}
+                      min={0}
+                      max={30}
+                      style={styles.shutterInput}
+                    />
+                  </View>
+                </View>
               </View>
 
               {/* Aperçu de la structure */}
@@ -330,6 +343,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
+    paddingVertical: 4,
   },
   structureTitle: {
     flexDirection: 'row',
@@ -360,6 +374,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1D5DB',
     padding: 2,
     justifyContent: 'center',
+    position: 'relative',
   },
   toggleActive: {
     backgroundColor: '#009999',
@@ -374,24 +389,50 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 2,
+    position: 'absolute',
+    left: 2,
   },
   toggleThumbActive: {
-    transform: [{ translateX: 22 }],
+    left: 24,
   },
 
   // Inputs de structure
   structureInputs: {
-    gap: 16,
+    gap: 20,
+  },
+  
+  // Section volets
+  shuttersSection: {
+    marginTop: 8,
   },
   shuttersTitle: {
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
     color: '#374151',
-    marginTop: 8,
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  shutterInputs: {
+  shutterInputsRow: {
+    flexDirection: 'row',
     gap: 12,
+  },
+  shutterInputContainer: {
+    flex: 1,
+  },
+  shutterTypeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 6,
+  },
+  shutterDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  shutterTypeLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#374151',
   },
   shutterInput: {
     marginBottom: 0,
@@ -402,7 +443,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FDFA',
     borderRadius: 8,
     padding: 16,
-    marginTop: 16,
+    marginTop: 8,
     borderWidth: 1,
     borderColor: '#A7F3D0',
   },
@@ -411,6 +452,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     color: '#047857',
     marginBottom: 12,
+    textAlign: 'center',
   },
   previewStats: {
     flexDirection: 'row',
@@ -429,5 +471,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     color: '#047857',
     marginTop: 2,
+    textAlign: 'center',
   },
 });

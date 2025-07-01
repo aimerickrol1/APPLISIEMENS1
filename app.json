@@ -2,13 +2,12 @@
   "expo": {
     "name": "Siemens Smoke Extraction Calculator",
     "slug": "siemens-smoke-extraction-calculator",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -24,7 +23,7 @@
       "package": "com.siemens.smokeextraction",
       "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#009999"
       }
     },
@@ -41,9 +40,8 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#ffffff",
-          "image": "./assets/images/icon.png",
-          "resizeMode": "contain",
-          "imageWidth": 300
+          "image": "./assets/images/splash.png",
+          "resizeMode": "contain"
         }
       ]
     ],

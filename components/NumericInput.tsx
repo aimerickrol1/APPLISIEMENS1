@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Minus, Plus } from 'lucide-react-native';
 
 interface NumericInputProps {
@@ -68,31 +68,45 @@ export function NumericInput({
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.inputContainer}>
         <TouchableOpacity
-          style={[styles.button, disabled && styles.buttonDisabled]}
+          style={[
+            styles.button, 
+            styles.buttonLeft,
+            (disabled || value <= min) && styles.buttonDisabled
+          ]}
           onPress={handleDecrement}
           disabled={disabled || value <= min}
+          activeOpacity={0.7}
         >
-          <Minus size={16} color={disabled || value <= min ? '#9CA3AF' : '#009999'} />
+          <Minus size={18} color={(disabled || value <= min) ? '#9CA3AF' : '#009999'} />
         </TouchableOpacity>
         
-        <TextInput
-          style={[styles.input, disabled && styles.inputDisabled]}
-          value={inputValue}
-          onChangeText={handleTextChange}
-          onBlur={handleBlur}
-          keyboardType="numeric"
-          textAlign="center"
-          editable={!disabled}
-          selectTextOnFocus={true}
-          maxLength={3}
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={[styles.input, disabled && styles.inputDisabled]}
+            value={inputValue}
+            onChangeText={handleTextChange}
+            onBlur={handleBlur}
+            keyboardType="numeric"
+            textAlign="center"
+            editable={!disabled}
+            selectTextOnFocus={true}
+            maxLength={3}
+            returnKeyType="done"
+            blurOnSubmit={true}
+          />
+        </View>
         
         <TouchableOpacity
-          style={[styles.button, disabled && styles.buttonDisabled]}
+          style={[
+            styles.button, 
+            styles.buttonRight,
+            (disabled || value >= max) && styles.buttonDisabled
+          ]}
           onPress={handleIncrement}
           disabled={disabled || value >= max}
+          activeOpacity={0.7}
         >
-          <Plus size={16} color={disabled || value >= max ? '#9CA3AF' : '#009999'} />
+          <Plus size={18} color={(disabled || value >= max) ? '#9CA3AF' : '#009999'} />
         </TouchableOpacity>
       </View>
     </View>
@@ -112,32 +126,46 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    height: 44,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1D5DB',
+    backgroundColor: '#ffffff',
     overflow: 'hidden',
   },
   button: {
-    width: 40,
-    height: 48,
+    width: 44,
+    height: 42,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+  },
+  buttonLeft: {
+    borderRightWidth: 1,
+    borderRightColor: '#E5E7EB',
+  },
+  buttonRight: {
+    borderLeftWidth: 1,
+    borderLeftColor: '#E5E7EB',
   },
   buttonDisabled: {
     backgroundColor: '#F3F4F6',
+    opacity: 0.5,
+  },
+  inputWrapper: {
+    flex: 1,
+    height: 42,
+    justifyContent: 'center',
   },
   input: {
     flex: 1,
-    height: 48,
     fontSize: 16,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Inter-SemiBold',
     color: '#111827',
     backgroundColor: '#ffffff',
-    paddingHorizontal: 12,
     textAlign: 'center',
+    paddingHorizontal: 8,
+    height: 42,
   },
   inputDisabled: {
     backgroundColor: '#F9FAFB',

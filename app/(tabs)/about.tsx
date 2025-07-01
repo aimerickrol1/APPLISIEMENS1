@@ -220,7 +220,7 @@ export default function AboutScreen() {
         </View>
       </Modal>
 
-      {/* Modal Calculs de conformité */}
+      {/* Modal Calculs de conformité - SANS BARRE DE SCROLL */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -240,7 +240,11 @@ export default function AboutScreen() {
               </TouchableOpacity>
             </View>
             
-            <ScrollView style={styles.calculationsScrollView} showsVerticalScrollIndicator={true}>
+            <ScrollView 
+              style={styles.calculationsScrollView} 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.calculationsScrollContent}
+            >
               {/* Formule principale */}
               <View style={styles.calculationSection}>
                 <Text style={styles.calculationTitle}>📐 Formule de calcul de l'écart</Text>
@@ -378,7 +382,7 @@ export default function AboutScreen() {
         </View>
       </Modal>
 
-      {/* Modal Prochaines nouveautés - VERSION CORRIGÉE */}
+      {/* Modal Prochaines nouveautés - SANS BARRE DE SCROLL */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -398,7 +402,11 @@ export default function AboutScreen() {
               </TouchableOpacity>
             </View>
             
-            <ScrollView style={styles.upcomingScrollView} showsVerticalScrollIndicator={true}>
+            <ScrollView 
+              style={styles.upcomingScrollView} 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.upcomingScrollContent}
+            >
               {/* Introduction */}
               <View style={styles.upcomingIntro}>
                 <Text style={styles.upcomingIntroText}>
@@ -656,21 +664,25 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     maxHeight: '80%',
   },
+  // Modal des calculs de conformité optimisé pour mobile SANS BARRE DE SCROLL
   calculationsModalContent: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
-    padding: 24,
+    padding: 20,
     width: '100%',
-    maxWidth: 600,
-    maxHeight: '90%',
+    maxWidth: 650,
+    maxHeight: '85%',
+    marginVertical: 40,
   },
+  // Modal des prochaines nouveautés optimisé pour mobile SANS BARRE DE SCROLL
   upcomingFeaturesModalContent: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
-    padding: 24,
+    padding: 20,
     width: '100%',
-    maxWidth: 700,
-    maxHeight: '90%',
+    maxWidth: 650,
+    maxHeight: '85%',
+    marginVertical: 40,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -691,11 +703,23 @@ const styles = StyleSheet.create({
   modalScrollView: {
     maxHeight: 300,
   },
+  // ScrollView optimisé pour mobile SANS BARRE DE SCROLL
   calculationsScrollView: {
-    maxHeight: 500,
+    maxHeight: 450,
+    paddingBottom: 10,
   },
+  // Style pour le contenu du scroll des calculs
+  calculationsScrollContent: {
+    paddingBottom: 20,
+  },
+  // ScrollView optimisé pour mobile SANS BARRE DE SCROLL
   upcomingScrollView: {
-    maxHeight: 600,
+    maxHeight: 500,
+    paddingBottom: 10,
+  },
+  // Style pour le contenu du scroll
+  upcomingScrollContent: {
+    paddingBottom: 20,
   },
   modalText: {
     fontSize: 14,
@@ -713,20 +737,21 @@ const styles = StyleSheet.create({
   },
   modalFooter: {
     marginTop: 16,
+    paddingTop: 12,
   },
 
   // Styles pour le contenu des calculs
   calculationSection: {
-    marginBottom: 24,
-    paddingBottom: 16,
+    marginBottom: 20,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   calculationTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   formulaContainer: {
     backgroundColor: '#F0FDFA',
@@ -737,90 +762,90 @@ const styles = StyleSheet.create({
     borderLeftColor: '#10B981',
   },
   formulaText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Inter-Medium',
     color: '#047857',
     textAlign: 'center',
   },
   calculationDescription: {
-    fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-    lineHeight: 18,
-  },
-  criteriaContainer: {
-    gap: 12,
-  },
-  criteriaItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  criteriaIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  criteriaContent: {
-    flex: 1,
-  },
-  criteriaLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  criteriaDescription: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
     color: '#6B7280',
     lineHeight: 16,
   },
+  criteriaContainer: {
+    gap: 10,
+  },
+  criteriaItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  criteriaIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 3,
+  },
+  criteriaContent: {
+    flex: 1,
+  },
+  criteriaLabel: {
+    fontSize: 13,
+    fontFamily: 'Inter-SemiBold',
+    color: '#111827',
+    marginBottom: 3,
+  },
+  criteriaDescription: {
+    fontSize: 11,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    lineHeight: 15,
+  },
   exampleContainer: {
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+    padding: 10,
+    marginBottom: 10,
   },
   exampleTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Inter-SemiBold',
     color: '#111827',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   exampleData: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'Inter-Regular',
     color: '#374151',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   exampleCalculation: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'Inter-Medium',
     color: '#009999',
-    marginBottom: 6,
+    marginBottom: 5,
     fontStyle: 'italic',
   },
   exampleResult: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: 'Inter-Medium',
     color: '#111827',
   },
   algorithmContainer: {
     backgroundColor: '#F8FAFC',
     borderRadius: 8,
-    padding: 12,
+    padding: 10,
   },
   algorithmStep: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: 'Inter-SemiBold',
     color: '#111827',
-    marginTop: 8,
-    marginBottom: 4,
+    marginTop: 6,
+    marginBottom: 3,
   },
   algorithmDetail: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'Inter-Regular',
     color: '#6B7280',
     marginBottom: 2,
@@ -828,21 +853,21 @@ const styles = StyleSheet.create({
   technicalNote: {
     backgroundColor: '#FEF3C7',
     borderRadius: 8,
-    padding: 12,
+    padding: 10,
     borderLeftWidth: 4,
     borderLeftColor: '#F59E0B',
   },
   technicalNoteTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Inter-SemiBold',
     color: '#92400E',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   technicalNoteText: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'Inter-Regular',
     color: '#92400E',
-    lineHeight: 16,
+    lineHeight: 15,
   },
 
   // Styles pour les prochaines nouveautés - VERSION CORRIGÉE
@@ -850,7 +875,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FDFA',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 20,
     borderLeftWidth: 4,
     borderLeftColor: '#009999',
   },
@@ -862,43 +887,43 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   featureSection: {
-    marginBottom: 24,
-    paddingBottom: 16,
+    marginBottom: 20,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   featureSectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     color: '#111827',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 14,
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
   },
   featureIcon: {
-    fontSize: 24,
-    marginRight: 16,
+    fontSize: 22,
+    marginRight: 14,
     marginTop: 2,
   },
   featureContent: {
     flex: 1,
   },
   featureTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Inter-SemiBold',
     color: '#111827',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   featureDescription: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Inter-Regular',
     color: '#6B7280',
-    lineHeight: 20,
+    lineHeight: 18,
   },
 });
