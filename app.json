@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -23,7 +23,7 @@
       "package": "com.siemens.smokeextraction",
       "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#009999"
       }
     },
@@ -40,13 +40,14 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#ffffff",
-          "image": "./assets/images/splash.png",
+          "image": "./assets/images/icon.png",
           "resizeMode": "contain"
         }
       ]
     ],
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/8c402814-c9c3-4e48-831c-471960e934af"
     },
     "experiments": {
       "typedRoutes": true
@@ -59,6 +60,9 @@
         "projectId": "8c402814-c9c3-4e48-831c-471960e934af"
       }
     },
-    "owner": "aimerickrol"
+    "owner": "aimerickrol",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
