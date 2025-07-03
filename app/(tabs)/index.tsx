@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Plus, Minus, Trash2, Building2, Layers } from 'lucide-react-native';
+import { Plus, Minus, Trash2, Building2, Layers, Edit3 } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
@@ -13,12 +13,17 @@ import { storage } from '@/utils/storage';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-// INTERFACES POUR LA NOUVELLE PRÉDÉFINITION
+// INTERFACES POUR LA NOUVELLE PRÉDÉFINITION AVEC NOMS DE VOLETS
+interface PredefinedShutter {
+  id: string;
+  name: string;
+  type: 'high' | 'low';
+}
+
 interface PredefinedZone {
   id: string;
   name: string;
-  highShutters: number;
-  lowShutters: number;
+  shutters: PredefinedShutter[];
 }
 
 interface PredefinedBuilding {
@@ -49,7 +54,7 @@ export default function ProjectsScreen() {
   const [formLoading, setFormLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
 
-  // NOUVELLE PRÉDÉFINITION DE STRUCTURE
+  // NOUVELLE PRÉDÉFINITION DE STRUCTURE AVEC VOLETS NOMMÉS
   const [structurePredefinition, setStructurePredefinition] = useState<StructurePredefinition>({
     enabled: false,
     buildings: []
@@ -127,9 +132,20 @@ export default function ProjectsScreen() {
   const createDefaultZone = (): PredefinedZone => ({
     id: Date.now().toString(),
     name: 'ZF01',
-    highShutters: 1,
-    lowShutters: 1
+    shutters: [
+      createDefaultShutter('high', 1),
+      createDefaultShutter('low', 1)
+    ]
   });
+
+  const createDefaultShutter = (type: 'high' | 'low', index: number): PredefinedShutter => {
+    const prefix = getShutterPrefix(type, currentLanguage);
+    return {
+      id: `${Date.now()}_${type}_${index}`,
+      name: `${prefix}${index.toString().padStart(2, '0')}`,
+      type
+    };
+  };
 
   const addBuilding = () => {
     const buildingLetter = String.fromCharCode(65 + structurePredefinition.buildings.length); // A, B, C...
@@ -170,8 +186,10 @@ export default function ProjectsScreen() {
           const newZone: PredefinedZone = {
             id: Date.now().toString(),
             name: `ZF${zoneNumber.toString().padStart(2, '0')}`,
-            highShutters: 1,
-            lowShutters: 1
+            shutters: [
+              createDefaultShutter('high', 1),
+              createDefaultShutter('low', 1)
+            ]
           };
           return { ...b, zones: [...b.zones, newZone] };
         }
@@ -207,7 +225,48 @@ export default function ProjectsScreen() {
     }));
   };
 
-  const updateZoneShutters = (buildingId: string, zoneId: string, type: 'high' | 'low', count: number) => {
+  // NOUVELLES FONCTIONS POUR GÉRER LES VOLETS INDIVIDUELLEMENT
+  const addShutter = (buildingId: string, zoneId: string, type: 'high' | 'low') => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: prev.buildings.map(b => 
+        b.id === buildingId 
+          ? { 
+              ...b, 
+              zones: b.zones.map(z => {
+                if (z.id === zoneId) {
+                  const shuttersOfType = z.shutters.filter(s => s.type === type);
+                  const nextIndex = shuttersOfType.length + 1;
+                  const newShutter = createDefaultShutter(type, nextIndex);
+                  return { ...z, shutters: [...z.shutters, newShutter] };
+                }
+                return z;
+              })
+            }
+          : b
+      )
+    }));
+  };
+
+  const removeShutter = (buildingId: string, zoneId: string, shutterId: string) => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: prev.buildings.map(b => 
+        b.id === buildingId 
+          ? { 
+              ...b, 
+              zones: b.zones.map(z => 
+                z.id === zoneId 
+                  ? { ...z, shutters: z.shutters.filter(s => s.id !== shutterId) }
+                  : z
+              )
+            }
+          : b
+      )
+    }));
+  };
+
+  const updateShutterName = (buildingId: string, zoneId: string, shutterId: string, name: string) => {
     setStructurePredefinition(prev => ({
       ...prev,
       buildings: prev.buildings.map(b => 
@@ -218,7 +277,9 @@ export default function ProjectsScreen() {
                 z.id === zoneId 
                   ? { 
                       ...z, 
-                      [type === 'high' ? 'highShutters' : 'lowShutters']: count 
+                      shutters: z.shutters.map(s => 
+                        s.id === shutterId ? { ...s, name } : s
+                      )
                     }
                   : z
               )
@@ -245,23 +306,11 @@ export default function ProjectsScreen() {
             });
 
             if (zone) {
-              // Créer les volets hauts
-              for (let vh = 1; vh <= zoneDef.highShutters; vh++) {
-                const highPrefix = getShutterPrefix('high', currentLanguage);
+              // Créer chaque volet avec son nom personnalisé
+              for (const shutterDef of zoneDef.shutters) {
                 await storage.createShutter(zone.id, {
-                  name: `${highPrefix}${vh.toString().padStart(2, '0')}`,
-                  type: 'high',
-                  referenceFlow: 0,
-                  measuredFlow: 0,
-                });
-              }
-
-              // Créer les volets bas
-              for (let vb = 1; vb <= zoneDef.lowShutters; vb++) {
-                const lowPrefix = getShutterPrefix('low', currentLanguage);
-                await storage.createShutter(zone.id, {
-                  name: `${lowPrefix}${vb.toString().padStart(2, '0')}`,
-                  type: 'low',
+                  name: shutterDef.name,
+                  type: shutterDef.type,
                   referenceFlow: 0,
                   measuredFlow: 0,
                 });
@@ -280,7 +329,7 @@ export default function ProjectsScreen() {
     const totalBuildings = structurePredefinition.buildings.length;
     const totalZones = structurePredefinition.buildings.reduce((sum, b) => sum + b.zones.length, 0);
     const totalShutters = structurePredefinition.buildings.reduce((sum, b) => 
-      sum + b.zones.reduce((zoneSum, z) => zoneSum + z.highShutters + z.lowShutters, 0), 0
+      sum + b.zones.reduce((zoneSum, z) => zoneSum + z.shutters.length, 0), 0
     );
     return { totalBuildings, totalZones, totalShutters };
   };
@@ -814,7 +863,7 @@ export default function ProjectsScreen() {
         )}
       </View>
 
-      {/* MODAL AVEC NOUVELLE PRÉDÉFINITION */}
+      {/* MODAL AVEC PRÉDÉFINITION ET NOMS DE VOLETS PERSONNALISABLES */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -869,7 +918,7 @@ export default function ProjectsScreen() {
                 error={errors.endDate}
               />
 
-              {/* NOUVELLE SECTION PRÉDÉFINITION */}
+              {/* NOUVELLE SECTION PRÉDÉFINITION AVEC NOMS DE VOLETS */}
               <View style={styles.predefinitionSection}>
                 <TouchableOpacity 
                   style={styles.predefinitionToggle}
@@ -881,7 +930,7 @@ export default function ProjectsScreen() {
                         🏗️ {strings.predefineStructure} ({strings.optional})
                       </Text>
                       <Text style={styles.predefinitionSubtitle}>
-                        Créer automatiquement bâtiments, zones et volets
+                        Créer automatiquement bâtiments, zones et volets avec noms personnalisables
                       </Text>
                     </View>
                     <View style={styles.toggleSwitch}>
@@ -953,23 +1002,75 @@ export default function ProjectsScreen() {
                               </TouchableOpacity>
                             </View>
 
-                            <View style={styles.shuttersRow}>
-                              <NumericInput
-                                label={`VH (${getShutterPrefix('high', currentLanguage)})`}
-                                value={zone.highShutters}
-                                onValueChange={(value) => updateZoneShutters(building.id, zone.id, 'high', value)}
-                                min={0}
-                                max={30}
-                                style={styles.shutterInput}
-                              />
-                              <NumericInput
-                                label={`VB (${getShutterPrefix('low', currentLanguage)})`}
-                                value={zone.lowShutters}
-                                onValueChange={(value) => updateZoneShutters(building.id, zone.id, 'low', value)}
-                                min={0}
-                                max={30}
-                                style={styles.shutterInput}
-                              />
+                            {/* NOUVELLE SECTION : Liste des volets avec noms personnalisables */}
+                            <View style={styles.shuttersSection}>
+                              <Text style={styles.shuttersSectionTitle}>🔲 Volets de la zone</Text>
+                              
+                              {/* Volets hauts */}
+                              <View style={styles.shutterTypeSection}>
+                                <View style={styles.shutterTypeHeader}>
+                                  <View style={styles.shutterTypeIndicator}>
+                                    <View style={[styles.shutterTypeDot, { backgroundColor: '#10B981' }]} />
+                                    <Text style={styles.shutterTypeLabel}>Volets Hauts ({getShutterPrefix('high', currentLanguage)})</Text>
+                                  </View>
+                                  <TouchableOpacity
+                                    onPress={() => addShutter(building.id, zone.id, 'high')}
+                                    style={styles.addShutterButton}
+                                  >
+                                    <Plus size={12} color="#10B981" />
+                                  </TouchableOpacity>
+                                </View>
+                                
+                                {zone.shutters.filter(s => s.type === 'high').map((shutter) => (
+                                  <View key={shutter.id} style={styles.shutterItem}>
+                                    <TextInput
+                                      style={styles.shutterNameInput}
+                                      value={shutter.name}
+                                      onChangeText={(text) => updateShutterName(building.id, zone.id, shutter.id, text)}
+                                      placeholder={`${getShutterPrefix('high', currentLanguage)}01`}
+                                    />
+                                    <TouchableOpacity
+                                      onPress={() => removeShutter(building.id, zone.id, shutter.id)}
+                                      style={styles.removeShutterButton}
+                                    >
+                                      <Trash2 size={10} color="#EF4444" />
+                                    </TouchableOpacity>
+                                  </View>
+                                ))}
+                              </View>
+
+                              {/* Volets bas */}
+                              <View style={styles.shutterTypeSection}>
+                                <View style={styles.shutterTypeHeader}>
+                                  <View style={styles.shutterTypeIndicator}>
+                                    <View style={[styles.shutterTypeDot, { backgroundColor: '#F59E0B' }]} />
+                                    <Text style={styles.shutterTypeLabel}>Volets Bas ({getShutterPrefix('low', currentLanguage)})</Text>
+                                  </View>
+                                  <TouchableOpacity
+                                    onPress={() => addShutter(building.id, zone.id, 'low')}
+                                    style={styles.addShutterButton}
+                                  >
+                                    <Plus size={12} color="#F59E0B" />
+                                  </TouchableOpacity>
+                                </View>
+                                
+                                {zone.shutters.filter(s => s.type === 'low').map((shutter) => (
+                                  <View key={shutter.id} style={styles.shutterItem}>
+                                    <TextInput
+                                      style={styles.shutterNameInput}
+                                      value={shutter.name}
+                                      onChangeText={(text) => updateShutterName(building.id, zone.id, shutter.id, text)}
+                                      placeholder={`${getShutterPrefix('low', currentLanguage)}01`}
+                                    />
+                                    <TouchableOpacity
+                                      onPress={() => removeShutter(building.id, zone.id, shutter.id)}
+                                      style={styles.removeShutterButton}
+                                    >
+                                      <Trash2 size={10} color="#EF4444" />
+                                    </TouchableOpacity>
+                                  </View>
+                                ))}
+                              </View>
                             </View>
                           </View>
                         ))}
@@ -1346,7 +1447,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // STYLES POUR LA NOUVELLE PRÉDÉFINITION
+  // STYLES POUR LA NOUVELLE PRÉDÉFINITION AVEC NOMS DE VOLETS
   predefinitionSection: {
     marginTop: 24,
     marginBottom: 16,
@@ -1497,14 +1598,68 @@ const styles = StyleSheet.create({
   removeZoneButton: {
     padding: 2,
   },
-  shuttersRow: {
+  
+  // NOUVEAUX STYLES POUR LES VOLETS PERSONNALISABLES
+  shuttersSection: {
+    marginTop: 8,
+  },
+  shuttersSectionTitle: {
+    fontSize: 12,
+    fontFamily: 'Inter-SemiBold',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  shutterTypeSection: {
+    marginBottom: 12,
+  },
+  shutterTypeHeader: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
   },
-  shutterInput: {
+  shutterTypeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  shutterTypeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  shutterTypeLabel: {
+    fontSize: 11,
+    fontFamily: 'Inter-Medium',
+    color: '#374151',
+  },
+  addShutterButton: {
+    padding: 4,
+    borderRadius: 4,
+    backgroundColor: '#F9FAFB',
+  },
+  shutterItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    gap: 6,
+  },
+  shutterNameInput: {
     flex: 1,
-    marginBottom: 0,
+    fontSize: 11,
+    fontFamily: 'Inter-Regular',
+    color: '#374151',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    backgroundColor: '#ffffff',
   },
+  removeShutterButton: {
+    padding: 2,
+  },
+  
   addZoneButton: {
     flexDirection: 'row',
     alignItems: 'center',
