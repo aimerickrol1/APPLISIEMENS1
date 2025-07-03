@@ -1,18 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Plus, Minus, Trash2, Building2, Layers } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
+import { NumericInput } from '@/components/NumericInput';
 import { Project } from '@/types';
 import { storage } from '@/utils/storage';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+// INTERFACES POUR LA NOUVELLE PRÉDÉFINITION
+interface PredefinedZone {
+  id: string;
+  name: string;
+  highShutters: number;
+  lowShutters: number;
+}
+
+interface PredefinedBuilding {
+  id: string;
+  name: string;
+  zones: PredefinedZone[];
+}
+
+interface StructurePredefinition {
+  enabled: boolean;
+  buildings: PredefinedBuilding[];
+}
+
 export default function ProjectsScreen() {
-  const { strings } = useLanguage();
+  const { strings, currentLanguage } = useLanguage();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -27,6 +48,23 @@ export default function ProjectsScreen() {
   const [endDate, setEndDate] = useState('');
   const [formLoading, setFormLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
+
+  // NOUVELLE PRÉDÉFINITION DE STRUCTURE
+  const [structurePredefinition, setStructurePredefinition] = useState<StructurePredefinition>({
+    enabled: false,
+    buildings: []
+  });
+
+  // Fonction pour obtenir le préfixe selon la langue
+  const getShutterPrefix = (shutterType: 'high' | 'low', language: string) => {
+    const prefixes = {
+      fr: { high: 'VH', low: 'VB' },
+      en: { high: 'HS', low: 'LS' },
+      es: { high: 'CA', low: 'CB' },
+      it: { high: 'SA', low: 'SB' },
+    };
+    return prefixes[language as keyof typeof prefixes]?.[shutterType] || prefixes.fr[shutterType];
+  };
 
   useEffect(() => {
     loadProjects();
@@ -59,11 +97,192 @@ export default function ProjectsScreen() {
     setStartDate('');
     setEndDate('');
     setErrors({});
+    setStructurePredefinition({
+      enabled: false,
+      buildings: []
+    });
   };
 
   const handleCreateProject = () => {
     resetForm();
     setCreateModalVisible(true);
+  };
+
+  // FONCTIONS DE GESTION DE LA PRÉDÉFINITION
+
+  const togglePredefinition = () => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      enabled: !prev.enabled,
+      buildings: !prev.enabled ? [createDefaultBuilding()] : []
+    }));
+  };
+
+  const createDefaultBuilding = (): PredefinedBuilding => ({
+    id: Date.now().toString(),
+    name: `${strings.building} A`,
+    zones: [createDefaultZone()]
+  });
+
+  const createDefaultZone = (): PredefinedZone => ({
+    id: Date.now().toString(),
+    name: 'ZF01',
+    highShutters: 1,
+    lowShutters: 1
+  });
+
+  const addBuilding = () => {
+    const buildingLetter = String.fromCharCode(65 + structurePredefinition.buildings.length); // A, B, C...
+    const newBuilding: PredefinedBuilding = {
+      id: Date.now().toString(),
+      name: `${strings.building} ${buildingLetter}`,
+      zones: [createDefaultZone()]
+    };
+
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: [...prev.buildings, newBuilding]
+    }));
+  };
+
+  const removeBuilding = (buildingId: string) => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: prev.buildings.filter(b => b.id !== buildingId)
+    }));
+  };
+
+  const updateBuildingName = (buildingId: string, name: string) => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: prev.buildings.map(b => 
+        b.id === buildingId ? { ...b, name } : b
+      )
+    }));
+  };
+
+  const addZone = (buildingId: string) => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: prev.buildings.map(b => {
+        if (b.id === buildingId) {
+          const zoneNumber = b.zones.length + 1;
+          const newZone: PredefinedZone = {
+            id: Date.now().toString(),
+            name: `ZF${zoneNumber.toString().padStart(2, '0')}`,
+            highShutters: 1,
+            lowShutters: 1
+          };
+          return { ...b, zones: [...b.zones, newZone] };
+        }
+        return b;
+      })
+    }));
+  };
+
+  const removeZone = (buildingId: string, zoneId: string) => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: prev.buildings.map(b => 
+        b.id === buildingId 
+          ? { ...b, zones: b.zones.filter(z => z.id !== zoneId) }
+          : b
+      )
+    }));
+  };
+
+  const updateZoneName = (buildingId: string, zoneId: string, name: string) => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: prev.buildings.map(b => 
+        b.id === buildingId 
+          ? { 
+              ...b, 
+              zones: b.zones.map(z => 
+                z.id === zoneId ? { ...z, name } : z
+              )
+            }
+          : b
+      )
+    }));
+  };
+
+  const updateZoneShutters = (buildingId: string, zoneId: string, type: 'high' | 'low', count: number) => {
+    setStructurePredefinition(prev => ({
+      ...prev,
+      buildings: prev.buildings.map(b => 
+        b.id === buildingId 
+          ? { 
+              ...b, 
+              zones: b.zones.map(z => 
+                z.id === zoneId 
+                  ? { 
+                      ...z, 
+                      [type === 'high' ? 'highShutters' : 'lowShutters']: count 
+                    }
+                  : z
+              )
+            }
+          : b
+      )
+    }));
+  };
+
+  // CRÉATION DE LA STRUCTURE PRÉDÉFINIE
+  const createPredefinedStructure = async (projectId: string) => {
+    try {
+      for (const buildingDef of structurePredefinition.buildings) {
+        const building = await storage.createBuilding(projectId, {
+          name: buildingDef.name,
+          description: undefined,
+        });
+
+        if (building) {
+          for (const zoneDef of buildingDef.zones) {
+            const zone = await storage.createFunctionalZone(building.id, {
+              name: zoneDef.name,
+              description: undefined,
+            });
+
+            if (zone) {
+              // Créer les volets hauts
+              for (let vh = 1; vh <= zoneDef.highShutters; vh++) {
+                const highPrefix = getShutterPrefix('high', currentLanguage);
+                await storage.createShutter(zone.id, {
+                  name: `${highPrefix}${vh.toString().padStart(2, '0')}`,
+                  type: 'high',
+                  referenceFlow: 0,
+                  measuredFlow: 0,
+                });
+              }
+
+              // Créer les volets bas
+              for (let vb = 1; vb <= zoneDef.lowShutters; vb++) {
+                const lowPrefix = getShutterPrefix('low', currentLanguage);
+                await storage.createShutter(zone.id, {
+                  name: `${lowPrefix}${vb.toString().padStart(2, '0')}`,
+                  type: 'low',
+                  referenceFlow: 0,
+                  measuredFlow: 0,
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création de la structure:', error);
+    }
+  };
+
+  // Calcul des totaux pour l'aperçu
+  const getTotals = () => {
+    const totalBuildings = structurePredefinition.buildings.length;
+    const totalZones = structurePredefinition.buildings.reduce((sum, b) => sum + b.zones.length, 0);
+    const totalShutters = structurePredefinition.buildings.reduce((sum, b) => 
+      sum + b.zones.reduce((zoneSum, z) => zoneSum + z.highShutters + z.lowShutters, 0), 0
+    );
+    return { totalBuildings, totalZones, totalShutters };
   };
 
   const handleSelectionMode = () => {
@@ -204,6 +423,11 @@ export default function ProjectsScreen() {
       }
 
       const project = await storage.createProject(projectData);
+
+      // Créer la structure prédéfinie si activée
+      if (structurePredefinition.enabled && structurePredefinition.buildings.length > 0) {
+        await createPredefinedStructure(project.id);
+      }
 
       setCreateModalVisible(false);
       resetForm();
@@ -513,6 +737,8 @@ export default function ProjectsScreen() {
     );
   }
 
+  const totals = getTotals();
+
   return (
     <View style={styles.container}>
       <Header 
@@ -588,7 +814,7 @@ export default function ProjectsScreen() {
         )}
       </View>
 
-      {/* MODAL SIMPLIFIÉ SANS PRÉDÉFINITION */}
+      {/* MODAL AVEC NOUVELLE PRÉDÉFINITION */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -611,6 +837,7 @@ export default function ProjectsScreen() {
               style={styles.modalBody} 
               showsVerticalScrollIndicator={false}
             >
+              {/* Champs de base du projet */}
               <Input
                 label={strings.projectName + " *"}
                 value={projectName}
@@ -641,6 +868,134 @@ export default function ProjectsScreen() {
                 placeholder="JJ/MM/AAAA"
                 error={errors.endDate}
               />
+
+              {/* NOUVELLE SECTION PRÉDÉFINITION */}
+              <View style={styles.predefinitionSection}>
+                <TouchableOpacity 
+                  style={styles.predefinitionToggle}
+                  onPress={togglePredefinition}
+                >
+                  <View style={styles.toggleHeader}>
+                    <View style={styles.toggleTitleContainer}>
+                      <Text style={styles.predefinitionTitle}>
+                        🏗️ {strings.predefineStructure} ({strings.optional})
+                      </Text>
+                      <Text style={styles.predefinitionSubtitle}>
+                        Créer automatiquement bâtiments, zones et volets
+                      </Text>
+                    </View>
+                    <View style={styles.toggleSwitch}>
+                      <View style={[styles.switchTrack, structurePredefinition.enabled && styles.switchTrackActive]}>
+                        <View style={[styles.switchThumb, structurePredefinition.enabled && styles.switchThumbActive]} />
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+
+                {structurePredefinition.enabled && (
+                  <View style={styles.predefinitionContent}>
+                    {/* Aperçu des totaux */}
+                    {totals.totalBuildings > 0 && (
+                      <View style={styles.totalsCard}>
+                        <Text style={styles.totalsTitle}>📊 Aperçu de la structure</Text>
+                        <View style={styles.totalsRow}>
+                          <View style={styles.totalItem}>
+                            <Text style={styles.totalValue}>{totals.totalBuildings}</Text>
+                            <Text style={styles.totalLabel}>{strings.buildings}</Text>
+                          </View>
+                          <View style={styles.totalItem}>
+                            <Text style={styles.totalValue}>{totals.totalZones}</Text>
+                            <Text style={styles.totalLabel}>{strings.zones}</Text>
+                          </View>
+                          <View style={styles.totalItem}>
+                            <Text style={styles.totalValue}>{totals.totalShutters}</Text>
+                            <Text style={styles.totalLabel}>{strings.shutters}</Text>
+                          </View>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Liste des bâtiments */}
+                    {structurePredefinition.buildings.map((building, buildingIndex) => (
+                      <View key={building.id} style={styles.buildingCard}>
+                        <View style={styles.buildingHeader}>
+                          <Building2 size={16} color="#009999" />
+                          <TextInput
+                            style={styles.buildingNameInput}
+                            value={building.name}
+                            onChangeText={(text) => updateBuildingName(building.id, text)}
+                            placeholder="Nom du bâtiment"
+                          />
+                          <TouchableOpacity
+                            onPress={() => removeBuilding(building.id)}
+                            style={styles.removeButton}
+                          >
+                            <Trash2 size={14} color="#EF4444" />
+                          </TouchableOpacity>
+                        </View>
+
+                        {/* Liste des zones du bâtiment */}
+                        {building.zones.map((zone, zoneIndex) => (
+                          <View key={zone.id} style={styles.zoneCard}>
+                            <View style={styles.zoneHeader}>
+                              <Layers size={14} color="#6B7280" />
+                              <TextInput
+                                style={styles.zoneNameInput}
+                                value={zone.name}
+                                onChangeText={(text) => updateZoneName(building.id, zone.id, text)}
+                                placeholder="Nom de la zone"
+                              />
+                              <TouchableOpacity
+                                onPress={() => removeZone(building.id, zone.id)}
+                                style={styles.removeZoneButton}
+                              >
+                                <Trash2 size={12} color="#EF4444" />
+                              </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.shuttersRow}>
+                              <NumericInput
+                                label={`VH (${getShutterPrefix('high', currentLanguage)})`}
+                                value={zone.highShutters}
+                                onValueChange={(value) => updateZoneShutters(building.id, zone.id, 'high', value)}
+                                min={0}
+                                max={30}
+                                style={styles.shutterInput}
+                              />
+                              <NumericInput
+                                label={`VB (${getShutterPrefix('low', currentLanguage)})`}
+                                value={zone.lowShutters}
+                                onValueChange={(value) => updateZoneShutters(building.id, zone.id, 'low', value)}
+                                min={0}
+                                max={30}
+                                style={styles.shutterInput}
+                              />
+                            </View>
+                          </View>
+                        ))}
+
+                        {/* Bouton ajouter zone */}
+                        <TouchableOpacity
+                          onPress={() => addZone(building.id)}
+                          style={styles.addZoneButton}
+                        >
+                          <Plus size={14} color="#009999" />
+                          <Text style={styles.addZoneText}>Ajouter une zone</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+
+                    {/* Bouton ajouter bâtiment */}
+                    <TouchableOpacity
+                      onPress={addBuilding}
+                      style={styles.addBuildingButton}
+                    >
+                      <Plus size={16} color="#009999" />
+                      <Text style={styles.addBuildingText}>Ajouter un bâtiment</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
             </ScrollView>
 
             <View style={styles.modalFooter}>
@@ -954,7 +1309,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 500,
-    maxHeight: '80%',
+    maxHeight: '90%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -978,7 +1333,7 @@ const styles = StyleSheet.create({
   },
   modalBody: {
     padding: 20,
-    maxHeight: 400,
+    maxHeight: 500,
   },
   modalFooter: {
     flexDirection: 'row',
@@ -989,5 +1344,195 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+  },
+
+  // STYLES POUR LA NOUVELLE PRÉDÉFINITION
+  predefinitionSection: {
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  predefinitionToggle: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  toggleTitleContainer: {
+    flex: 1,
+  },
+  predefinitionTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  predefinitionSubtitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+  },
+  toggleSwitch: {
+    marginLeft: 12,
+  },
+  switchTrack: {
+    width: 44,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  switchTrackActive: {
+    backgroundColor: '#009999',
+  },
+  switchThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    alignSelf: 'flex-start',
+  },
+  switchThumbActive: {
+    alignSelf: 'flex-end',
+  },
+  predefinitionContent: {
+    marginTop: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+  },
+  totalsCard: {
+    backgroundColor: '#F0FDFA',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  totalsTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#065F46',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  totalsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  totalItem: {
+    alignItems: 'center',
+  },
+  totalValue: {
+    fontSize: 18,
+    fontFamily: 'Inter-Bold',
+    color: '#10B981',
+  },
+  totalLabel: {
+    fontSize: 11,
+    fontFamily: 'Inter-Medium',
+    color: '#047857',
+    marginTop: 2,
+  },
+  buildingCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  buildingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  buildingNameInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#111827',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingVertical: 4,
+  },
+  removeButton: {
+    padding: 4,
+  },
+  zoneCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  zoneHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 6,
+  },
+  zoneNameInput: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#374151',
+    borderBottomWidth: 1,
+    borderBottomColor: '#D1D5DB',
+    paddingVertical: 2,
+  },
+  removeZoneButton: {
+    padding: 2,
+  },
+  shuttersRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  shutterInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  addZoneButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#009999',
+    borderStyle: 'dashed',
+  },
+  addZoneText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#009999',
+  },
+  addBuildingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#009999',
+  },
+  addBuildingText: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#ffffff',
   },
 });
