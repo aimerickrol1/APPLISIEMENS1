@@ -12,10 +12,6 @@ export default function TabLayout() {
         headerShown: false,
         animation: 'shift',
         animationDuration: 250,
-        tabBarScrollEnabled: false,
-        tabBarItemStyle: {
-          flex: 1,
-        },
         tabBarStyle: {
           backgroundColor: '#009999',
           borderTopWidth: 0,
@@ -36,6 +32,7 @@ export default function TabLayout() {
           marginBottom: 0,
         },
         tabBarHideOnKeyboard: true,
+        tabBarButton: undefined,
       }}>
       <Tabs.Screen
         name="index"
