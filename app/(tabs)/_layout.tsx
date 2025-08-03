@@ -30,7 +30,9 @@ export default function TabLayout() {
         tabBarIconStyle: {
           marginTop: -4, // AJUSTÉ : -8→-4 pour un centrage parfait
           marginBottom: 0,
-        }
+        },
+        tabBarHideOnKeyboard: true,
+        tabBarButton: undefined, // Empêche l'affichage de la flèche
       }}>
       <Tabs.Screen
         name="index"
@@ -75,38 +77,6 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color }) => (
             <Ionicons name="information-circle-outline" size={size} color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="project"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="building"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="zone"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="shutter"
-        options={{
-          href: null,
-        }}
-      />
-      {/* Onglet Paramètres caché */}
-      <Tabs.Screen
-        name="settings"
-        options={{
-          href: null, // Caché de la barre de navigation
-          title: 'Paramètres',
         }}
       />
     </Tabs>
