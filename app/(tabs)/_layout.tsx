@@ -77,14 +77,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* NOUVEAU : Onglet Paramètres caché */}
-      <Tabs.Screen
-        name="settings"
-        options={{
-          href: null, // Caché de la barre de navigation
-          title: 'Paramètres',
-        }}
-      />
       <Tabs.Screen
         name="project"
         options={{
@@ -107,6 +99,14 @@ export default function TabLayout() {
         name="shutter"
         options={{
           href: null,
+        }}
+      />
+      {/* Onglet Paramètres caché */}
+      <Tabs.Screen
+        name="settings"
+        options={{
+          href: null, // Caché de la barre de navigation
+          title: 'Paramètres',
         }}
       />
     </Tabs>
